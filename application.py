@@ -66,8 +66,7 @@ class Pi_Monitor:
             self.expansion.set_led_mode(1)
             self.expansion.set_all_led_color(76, 40, 130)
             self.expansion.set_fan_mode(1)
-            # self.expansion.set_fan_frecuency(50)
-            # self.expansion.set_fan_duty(255, 255)
+            self.expansion.set_fan_duty(255, 255)
         except Exception as e:
             sys.exit(1)
 
