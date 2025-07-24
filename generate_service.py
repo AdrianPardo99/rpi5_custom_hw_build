@@ -5,22 +5,25 @@ import shutil
 
 DEBUG = False
 
+
 def check_application_py(filenanme="application.py"):
     if not os.path.exists(filenanme):
         print("Error: {filenanme} does not exist in the current directory.")
         sys.exit(1)
+
 
 def get_current_directory():
     if DEBUG:
         print("Getting current directory...")
     return os.getcwd()
 
+
 def get_current_username_from_directory(directory):
     if DEBUG:
         print("Extracting username from directory path...")
     try:
-        parts = directory.split('/')
-        if len(parts) > 2 and parts[1] == 'home':
+        parts = directory.split("/")
+        if len(parts) > 2 and parts[1] == "home":
             return parts[2]
         else:
             print("Error: Unable to extract username from directory path.")
@@ -28,6 +31,7 @@ def get_current_username_from_directory(directory):
     except Exception as e:
         print(f"Error extracting username from directory path: {e}")
         sys.exit(1)
+
 
 def create_my_app_running_service(directory, username):
     service_content = f"""[Unit]
@@ -44,15 +48,16 @@ User={username}
 [Install]
 WantedBy=multi-user.target
 """
-    service_file_path = os.path.join('/etc/systemd/system/', 'hw_config.service')
+    service_file_path = os.path.join("/etc/systemd/system/", "hw_config.service")
     if os.path.exists(service_file_path):
         os.remove(service_file_path)
         if DEBUG:
             print(f"Existing hw_config.service file removed: {service_file_path}")
-    with open(service_file_path, 'w') as service_file:
+    with open(service_file_path, "w") as service_file:
         service_file.write(service_content)
     if DEBUG:
         print(f"hw_config.service created at {service_file_path}")
+
 
 def run_system_command(command):
     if DEBUG:
@@ -67,8 +72,9 @@ def run_system_command(command):
         print(e)
         sys.exit(1)
 
+
 def remove_pycache_folder(directory):
-    pycache_path = os.path.join(directory, '__pycache__')
+    pycache_path = os.path.join(directory, "__pycache__")
     if os.path.exists(pycache_path):
         try:
             shutil.rmtree(pycache_path)
@@ -77,6 +83,7 @@ def remove_pycache_folder(directory):
         except Exception as e:
             print(f"Error removing __pycache__ folder: {e}")
             sys.exit(1)
+
 
 if __name__ == "__main__":
     # Step 1: Check if application.py exists
@@ -102,7 +109,7 @@ if __name__ == "__main__":
     run_system_command("sudo systemctl enable hw_config.service")
     time.sleep(1)
 
-    '''
+    """
     # Disable hw_config.service
     run_system_command("sudo systemctl disable hw_config.service")
     time.sleep(1)
@@ -110,12 +117,10 @@ if __name__ == "__main__":
     # Stop hw_config.service
     run_system_command("sudo systemctl stop hw_config.service")
     time.sleep(1)
-    '''
+    """
 
     # Step 7: Start hw_config.service
     run_system_command("sudo systemctl start hw_config.service")
     time.sleep(1)
-    
+
     remove_pycache_folder(current_directory)
-
-

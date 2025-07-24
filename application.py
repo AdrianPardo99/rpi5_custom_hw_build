@@ -1,4 +1,3 @@
-
 # Thanks to @ricardodemauro for the code modifications.
 ## This is a rewrite of the application.py with:
 ## native method instead of syscall
@@ -19,9 +18,17 @@ import datetime
 from oled import OLED
 from expansion import Expansion
 
+
 class Pi_Monitor:
-    __slots__ = ['oled', 'expansion', 'font_size', 'cleanup_done', 
-                 'stop_event', '_fan_pwm_path', '_format_strings']
+    __slots__ = [
+        "oled",
+        "expansion",
+        "font_size",
+        "cleanup_done",
+        "stop_event",
+        "_fan_pwm_path",
+        "_format_strings",
+    ]
 
     def __init__(self):
         # Initialize OLED and Expansion objects
@@ -30,23 +37,23 @@ class Pi_Monitor:
         self.font_size = 12
         self.cleanup_done = False
         self.stop_event = threading.Event()  # Keep for signal handling
-        
+
         # Cache hwmon path lookup for performance
         self._fan_pwm_path = None
-        
+
         # Pre-allocate format strings
         self._format_strings = {
-            'cpu': "CPU USG: {}%",
-            'mem': "MEM USG: {}%", 
-            'disk': "DISK USG: {}%",
-            'date': "{}",
-            'week': "{}",
-            'time': "{}",
-            'pi_temp': "PI TEMP: {}C",
-            'pc_temp': "PC TEMP: {}C",
-            'fan_mode': "FAN MOD: {}",
-            'fan_duty': "FAN SPD: {}%",
-            'led_mode': "LED CFG: {}"
+            "cpu": "CPU USG: {}%",
+            "mem": "MEM USG: {}%",
+            "disk": "DISK USG: {}%",
+            "date": "{}",
+            "week": "{}",
+            "time": "{}",
+            "pi_temp": "PI TEMP: {}C",
+            "pc_temp": "PC TEMP: {}C",
+            "fan_mode": "FAN MOD: {}",
+            "fan_duty": "FAN SPD: {}%",
+            "led_mode": "LED CFG: {}",
         }
 
         try:
@@ -56,10 +63,10 @@ class Pi_Monitor:
 
         try:
             self.expansion = Expansion()
-            self.expansion.set_led_mode(2)
-            self.expansion.set_all_led_color(204, 169, 221)
+            self.expansion.set_led_mode(1)
+            self.expansion.set_all_led_color(76, 40, 130)
             self.expansion.set_fan_mode(1)
-            #self.expansion.set_fan_frecuency(50)
+            # self.expansion.set_fan_frecuency(50)
             self.expansion.set_fan_duty(255, 255)
         except Exception as e:
             sys.exit(1)
@@ -67,17 +74,17 @@ class Pi_Monitor:
         atexit.register(self.cleanup)
         signal.signal(signal.SIGTERM, self.handle_signal)
         signal.signal(signal.SIGINT, self.handle_signal)
-        
+
         # Initialize fan PWM path cache
         self._find_fan_pwm_path()
 
     def _find_fan_pwm_path(self):
         """Cache the fan PWM path to avoid repeated directory lookups"""
         try:
-            base_path = '/sys/devices/platform/cooling_fan/hwmon/'
-            hwmon_dirs = [d for d in os.listdir(base_path) if d.startswith('hwmon')]
+            base_path = "/sys/devices/platform/cooling_fan/hwmon/"
+            hwmon_dirs = [d for d in os.listdir(base_path) if d.startswith("hwmon")]
             if hwmon_dirs:
-                self._fan_pwm_path = os.path.join(base_path, hwmon_dirs[0], 'pwm1')
+                self._fan_pwm_path = os.path.join(base_path, hwmon_dirs[0], "pwm1")
         except Exception:
             self._fan_pwm_path = None
 
@@ -89,17 +96,19 @@ class Pi_Monitor:
                 if self._fan_pwm_path:
                     fan_input_path = self._fan_pwm_path
                 else:
-                    base_path = '/sys/devices/platform/cooling_fan/hwmon/'
-                    hwmon_dirs = [d for d in os.listdir(base_path) if d.startswith('hwmon')]
+                    base_path = "/sys/devices/platform/cooling_fan/hwmon/"
+                    hwmon_dirs = [
+                        d for d in os.listdir(base_path) if d.startswith("hwmon")
+                    ]
                     if not hwmon_dirs:
                         raise FileNotFoundError("No hwmon directory found")
-                    fan_input_path = os.path.join(base_path, hwmon_dirs[0], 'pwm1')
-                
+                    fan_input_path = os.path.join(base_path, hwmon_dirs[0], "pwm1")
+
                 # Direct file read instead of subprocess
-                with open(fan_input_path, 'r') as f:
+                with open(fan_input_path, "r") as f:
                     pwm_value = int(f.read().strip())
                     return max(0, min(255, pwm_value))  # Clamp between 0-255
-                    
+
             except (OSError, ValueError) as e:
                 if attempt < max_retries:
                     time.sleep(retry_delay)
@@ -124,7 +133,7 @@ class Pi_Monitor:
         except Exception:
             return 0
 
-    def get_raspberry_disk_usage(self, path='/'):
+    def get_raspberry_disk_usage(self, path="/"):
         """Get the disk usage percentage for the specified path"""
         try:
             disk_usage = psutil.disk_usage(path)
@@ -135,37 +144,37 @@ class Pi_Monitor:
     def get_raspberry_date(self):
         """Get the current date in YYYY-MM-DD format using native Python datetime"""
         try:
-            return datetime.date.today().strftime('%Y-%m-%d')
+            return datetime.date.today().strftime("%Y-%m-%d")
         except Exception:
             return "1990-1-1"
 
     def get_raspberry_weekday(self):
         """Get the current weekday name using native Python datetime"""
         equivalent = {
-            "Monday":"Lunes",
-            "Tuesday":"Martes",
-            "Wednesday":"Miercoles",
-            "Thursday":"Jueves",
+            "Monday": "Lunes",
+            "Tuesday": "Martes",
+            "Wednesday": "Miercoles",
+            "Thursday": "Jueves",
             "Friday": "Viernes",
             "Saturday": "Sabado",
             "Sunday": "Domingo",
         }
         try:
-            return equivalent.get(datetime.date.today().strftime("%A"),"Error")
+            return equivalent.get(datetime.date.today().strftime("%A"), "Error")
         except Exception:
             return "Error"
 
     def get_raspberry_time(self):
         """Get the current time in HH:MM:SS format using native Python datetime"""
         try:
-            return datetime.datetime.now().strftime('%H:%M:%S')
+            return datetime.datetime.now().strftime("%H:%M:%S")
         except Exception:
-            return '0:0:0'
+            return "0:0:0"
 
     def get_raspberry_cpu_temperature(self):
         """Get the CPU temperature in Celsius using direct file read"""
         try:
-            with open('/sys/devices/virtual/thermal/thermal_zone0/temp', 'r') as f:
+            with open("/sys/devices/virtual/thermal/thermal_zone0/temp", "r") as f:
                 temp_raw = int(f.read().strip())
                 return temp_raw / 1000.0
         except Exception:
@@ -255,16 +264,16 @@ class Pi_Monitor:
         max_pwm = 255
         min_pwm = 0
         oled_counter = 0  # Counter to control OLED update frequency
-        oled_screen = 0   # Which screen to show (0, 1, or 2)
-        
+        oled_screen = 0  # Which screen to show (0, 1, or 2)
+
         while not self.stop_event.is_set():
             # Fan control logic (runs every iteration - every 1 second)
             current_cpu_temp = self.get_raspberry_cpu_temperature()
             current_fan_pwm = self.get_raspberry_fan_pwm()
-            
+
             # Use single print statement to reduce I/O
             print(f"CPU TEMP: {current_cpu_temp}C, FAN PWM: {current_fan_pwm}")
-            
+
             if current_fan_pwm != -1:
                 if last_fan_pwm_limit == 0 and current_fan_pwm > temp_threshold_high:
                     last_fan_pwm = max_pwm
@@ -274,38 +283,109 @@ class Pi_Monitor:
                     last_fan_pwm = min_pwm
                     self.expansion.set_fan_duty(last_fan_pwm, last_fan_pwm)
                     last_fan_pwm_limit = 0
-            
+
             # OLED update logic (runs every 3 seconds)
             if oled_counter % 3 == 0:
                 self.oled.clear()
                 if oled_screen == 0:
                     # Screen 1: System Parameters
-                    self.oled.draw_text("d3vnullv01d hosts", position=(0, 0), font_size=self.font_size)
-                    self.oled.draw_text(self._format_strings['cpu'].format(self.get_raspberry_cpu_usage()), position=(0, 16), font_size=self.font_size)
-                    self.oled.draw_text(self._format_strings['mem'].format(self.get_raspberry_memory_usage()), position=(0, 32), font_size=self.font_size)
-                    self.oled.draw_text(self._format_strings['disk'].format(self.get_raspberry_disk_usage()), position=(0, 48), font_size=self.font_size)
+                    self.oled.draw_text(
+                        "d3vnullv01d hosts", position=(0, 0), font_size=self.font_size
+                    )
+                    self.oled.draw_text(
+                        self._format_strings["cpu"].format(
+                            self.get_raspberry_cpu_usage()
+                        ),
+                        position=(0, 16),
+                        font_size=self.font_size,
+                    )
+                    self.oled.draw_text(
+                        self._format_strings["mem"].format(
+                            self.get_raspberry_memory_usage()
+                        ),
+                        position=(0, 32),
+                        font_size=self.font_size,
+                    )
+                    self.oled.draw_text(
+                        self._format_strings["disk"].format(
+                            self.get_raspberry_disk_usage()
+                        ),
+                        position=(0, 48),
+                        font_size=self.font_size,
+                    )
                 elif oled_screen == 1:
                     # Screen 2: Date/Time/LED
-                    self.oled.draw_text(self._format_strings['date'].format(self.get_raspberry_date()), position=(0, 0), font_size=self.font_size)
-                    self.oled.draw_text(self._format_strings['week'].format(self.get_raspberry_weekday()), position=(0, 16), font_size=self.font_size)
-                    self.oled.draw_text(self._format_strings['time'].format(self.get_raspberry_time()), position=(0, 32), font_size=self.font_size)
-                    self.oled.draw_text(self._format_strings['led_mode'].format(self.get_computer_led_mode()), position=(0, 48), font_size=self.font_size)
+                    self.oled.draw_text(
+                        self._format_strings["date"].format(self.get_raspberry_date()),
+                        position=(0, 0),
+                        font_size=self.font_size,
+                    )
+                    self.oled.draw_text(
+                        self._format_strings["week"].format(
+                            self.get_raspberry_weekday()
+                        ),
+                        position=(0, 16),
+                        font_size=self.font_size,
+                    )
+                    self.oled.draw_text(
+                        self._format_strings["time"].format(self.get_raspberry_time()),
+                        position=(0, 32),
+                        font_size=self.font_size,
+                    )
+                    self.oled.draw_text(
+                        self._format_strings["led_mode"].format(
+                            self.get_computer_led_mode()
+                        ),
+                        position=(0, 48),
+                        font_size=self.font_size,
+                    )
                 elif oled_screen == 2:  # oled_screen == 2
                     # Screen 3: Temperature/Fan
-                    self.oled.draw_text(self._format_strings['pi_temp'].format(current_cpu_temp), position=(0, 0), font_size=self.font_size)
-                    self.oled.draw_text(self._format_strings['pc_temp'].format(self.get_computer_temperature()), position=(0, 16), font_size=self.font_size)
-                    self.oled.draw_text(self._format_strings['fan_mode'].format(self.get_computer_fan_mode()), position=(0, 32), font_size=self.font_size)
-                    self.oled.draw_text(self._format_strings['fan_duty'].format(int(float(self.get_computer_fan_duty()/255.0)*100)), position=(0, 48), font_size=self.font_size)
+                    self.oled.draw_text(
+                        self._format_strings["pi_temp"].format(current_cpu_temp),
+                        position=(0, 0),
+                        font_size=self.font_size,
+                    )
+                    self.oled.draw_text(
+                        self._format_strings["pc_temp"].format(
+                            self.get_computer_temperature()
+                        ),
+                        position=(0, 16),
+                        font_size=self.font_size,
+                    )
+                    self.oled.draw_text(
+                        self._format_strings["fan_mode"].format(
+                            self.get_computer_fan_mode()
+                        ),
+                        position=(0, 32),
+                        font_size=self.font_size,
+                    )
+                    self.oled.draw_text(
+                        self._format_strings["fan_duty"].format(
+                            int(float(self.get_computer_fan_duty() / 255.0) * 100)
+                        ),
+                        position=(0, 48),
+                        font_size=self.font_size,
+                    )
                 else:
-                    self.oled.draw_text("Hey luv u MBVE ❤️", position=(0, 0), font_size=self.font_size)
-                    self.oled.draw_text("SERVICE MOD BY", position=(0, 16), font_size=self.font_size)
-                    self.oled.draw_text("ADRIAN A.K.A", position=(0, 32), font_size=self.font_size)
-                    self.oled.draw_text("D3vnullV01d", position=(0, 48), font_size=self.font_size)
+                    self.oled.draw_text(
+                        "Hey MBVE ❤️", position=(0, 0), font_size=self.font_size
+                    )
+                    self.oled.draw_text(
+                        "SERVICE MOD BY", position=(0, 16), font_size=self.font_size
+                    )
+                    self.oled.draw_text(
+                        "ADRIAN A.K.A", position=(0, 32), font_size=self.font_size
+                    )
+                    self.oled.draw_text(
+                        "D3vnullV01d", position=(0, 48), font_size=self.font_size
+                    )
                 self.oled.show()
                 oled_screen = (oled_screen + 1) % 4  # Cycle through screens 0, 1, 2
-            
+
             oled_counter += 1
             time.sleep(1)  # Base interval of 1 second
+
 
 if __name__ == "__main__":
     pi_monitor = None

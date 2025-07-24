@@ -5,6 +5,7 @@ import time
 import os
 import shutil
 
+
 class OLED:
     def __init__(self, bus_number=1, i2c_address=0x3C):
         # Initialize I2C interface and OLED display
@@ -12,16 +13,16 @@ class OLED:
         self.i2c_address = i2c_address
         self.serial = i2c(port=self.bus_number, address=self.i2c_address)
         self.device = ssd1306(self.serial)
-        self.buffer = Image.new('1', (self.device.width, self.device.height))
+        self.buffer = Image.new("1", (self.device.width, self.device.height))
         self.draw = ImageDraw.Draw(self.buffer)
 
-        self.default_font_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf" 
+        self.default_font_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
         self.default_font_size = 16
         self.font = ImageFont.load_default()
 
     def clear(self):
         # Clear the content in the buffer
-        self.buffer = Image.new('1', (self.device.width, self.device.height))
+        self.buffer = Image.new("1", (self.device.width, self.device.height))
         self.draw = ImageDraw.Draw(self.buffer)
 
     def show(self):
@@ -50,7 +51,11 @@ class OLED:
 
     def draw_circle(self, xy, radius, outline=None, fill=None):
         # Draw a circle in the buffer
-        self.draw.ellipse((xy[0] - radius, xy[1] - radius, xy[0] + radius, xy[1] + radius), outline=outline, fill=fill)
+        self.draw.ellipse(
+            (xy[0] - radius, xy[1] - radius, xy[0] + radius, xy[1] + radius),
+            outline=outline,
+            fill=fill,
+        )
 
     def draw_arc(self, xy, start, end, fill=None, width=1):
         # Draw an arc in the buffer
@@ -71,17 +76,19 @@ class OLED:
     def draw_image(self, image_path, position=(0, 0), resize=None):
         # Display an image in the buffer
         try:
-            image = Image.open(image_path).convert('1')
+            image = Image.open(image_path).convert("1")
             if resize is not None:
                 image = image.resize(resize, Image.LANCZOS)
             else:
-                image = image.resize((self.device.width, self.device.height), Image.LANCZOS)
+                image = image.resize(
+                    (self.device.width, self.device.height), Image.LANCZOS
+                )
             self.buffer.paste(image, position)
         except FileNotFoundError:
             print(f"Error: File not found - {image_path}")
         except Exception as e:
             print(f"Error displaying image: {e}")
-   
+
     def draw_gif(self, gif_path, position=(0, 0), resize=None):
         # Display a GIF animation
         temp_folder = "temp"
@@ -92,31 +99,35 @@ class OLED:
             frames = []
             frame_delays = []
             for frame in ImageSequence.Iterator(gif):
-                delay = frame.info.get('duration', 100) / 1000.0
+                delay = frame.info.get("duration", 100) / 1000.0
                 frame_delays.append(delay)
                 width, height = frame.size
                 target_height = height
                 target_width = height * 2
                 if width < target_width:
-                    new_image = Image.new('L', (target_width, target_height), 0)
+                    new_image = Image.new("L", (target_width, target_height), 0)
                     x_offset = (target_width - width) // 2
                     new_image.paste(frame, (x_offset, 0))
                 else:
-                    new_image = Image.new('L', (width, target_height), 0)
+                    new_image = Image.new("L", (width, target_height), 0)
                     y_offset = (target_height - height) // 2
                     new_image.paste(frame, (0, y_offset))
                     target_width = width
-                new_image = new_image.convert('1')
+                new_image = new_image.convert("1")
                 if resize is not None:
                     new_image = new_image.resize(resize, Image.LANCZOS)
-                else:   
-                    new_image = new_image.resize((self.device.width, self.device.height), Image.LANCZOS)
-                new_image = new_image.resize((self.device.width, self.device.height), Image.LANCZOS)
+                else:
+                    new_image = new_image.resize(
+                        (self.device.width, self.device.height), Image.LANCZOS
+                    )
+                new_image = new_image.resize(
+                    (self.device.width, self.device.height), Image.LANCZOS
+                )
                 frame_path = os.path.join(temp_folder, f"frame_{len(frames)}.png")
                 new_image.save(frame_path)
                 frames.append(frame_path)
             for frame_path, delay in zip(frames, frame_delays):
-                self.draw_image(frame_path, position = position, resize = resize)
+                self.draw_image(frame_path, position=position, resize=resize)
                 self.show()
                 if delay > 0.17:
                     time.sleep(delay - 0.17)
@@ -130,7 +141,7 @@ class OLED:
 
     def save_buffer_to_image(self, image_path="saved_image.png"):
         # Save the content in the buffer as an image file
-        self.buffer.save(image_path) 
+        self.buffer.save(image_path)
 
 
 if __name__ == "__main__":
@@ -143,32 +154,32 @@ if __name__ == "__main__":
         oled.draw_text("Hello, World!", position=(0, 0))
         oled.show()
         time.sleep(0.5)
-        
+
         # Draw a point
         print("Step 2: Drawing point (64, 32)")
         oled.draw_point((64, 32), fill="white")
         oled.show()
         time.sleep(0.5)
-        
+
         # Draw lines
         print("Step 3: Drawing line ((0, 0), (127, 63)), ((0, 63), (127, 0))")
         oled.draw_line(((0, 0), (127, 63)), fill="white")
         oled.draw_line(((0, 63), (127, 0)), fill="white")
         oled.show()
         time.sleep(0.5)
-        
+
         # Draw a rectangle
         print("Step 4: Drawing rectangle ((44, 12), (84, 52))")
         oled.draw_rectangle(((44, 12), (84, 52)), outline="white", fill=None)
         oled.show()
         time.sleep(0.5)
-        
+
         # Draw an ellipse
         print("Step 5: Drawing ellipse ((20, 20), (100, 60))")
         oled.draw_ellipse(((20, 20), (100, 60)), outline="white", fill=None)
         oled.show()
         time.sleep(0.5)
-        
+
         # Draw a circle
         print("Step 6: Drawing circle (64, 32) with radius 20")
         oled.draw_circle((64, 32), 20, outline="white", fill=None)
@@ -181,10 +192,12 @@ if __name__ == "__main__":
         oled.draw_arc(((10, 30), (110, 50)), 180, 360, fill="white", width=1)
         oled.show()
         time.sleep(0.5)
-        
+
         # Draw a polygon
         print("Step 8: Drawing polygon ((20, 20), (40, 40), (60, 20), (40, 0))")
-        oled.draw_polygon(((20, 20), (40, 40), (60, 20), (40, 0)), outline="white", fill=None)
+        oled.draw_polygon(
+            ((20, 20), (40, 40), (60, 20), (40, 0)), outline="white", fill=None
+        )
 
         oled.show()
         time.sleep(0.5)
@@ -208,9 +221,9 @@ if __name__ == "__main__":
         time.sleep(0.5)
 
         # Save the buffer content to an image file
-        #oled.save_buffer_to_image("1.bmp")
-        #oled.save_buffer_to_image("1.png")
-        #oled.save_buffer_to_image("1.jpg")
+        # oled.save_buffer_to_image("1.bmp")
+        # oled.save_buffer_to_image("1.png")
+        # oled.save_buffer_to_image("1.jpg")
     except Exception as e:
         print(f"An error occurred: {e}")
     except KeyboardInterrupt:
@@ -219,7 +232,7 @@ if __name__ == "__main__":
         # Clear the display
         print("Step 10: Clearing display")
         oled.clear()
-        
+
         # Close the display
         print("Step 11: Closing OLED display")
         oled.close()
