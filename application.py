@@ -34,7 +34,7 @@ class Pi_Monitor:
         # Initialize OLED and Expansion objects
         self.oled = None
         self.expansion = None
-        self.font_size = 12
+        self.font_size = 10
         self.cleanup_done = False
         self.stop_event = threading.Event()  # Keep for signal handling
 
@@ -367,7 +367,7 @@ class Pi_Monitor:
                         position=(0, 48),
                         font_size=self.font_size,
                     )
-                else:
+                elif oled_screen == 3:
                     self.oled.draw_text(
                         "Hey MBVE ❤️", position=(0, 0), font_size=self.font_size
                     )
@@ -380,6 +380,7 @@ class Pi_Monitor:
                     self.oled.draw_text(
                         "D3vnullV01d", position=(0, 48), font_size=self.font_size
                     )
+
                 self.oled.show()
                 oled_screen = (oled_screen + 1) % 4  # Cycle through screens 0, 1, 2
 
