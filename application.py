@@ -56,8 +56,8 @@ class Pi_Monitor:
 
         try:
             self.expansion = Expansion()
-            self.expansion.set_led_mode(3)
-            self.expansion.set_all_led_color(255, 0, 0)
+            self.expansion.set_led_mode(2)
+            self.expansion.set_all_led_color(204, 169, 221)
             self.expansion.set_fan_mode(1)
             #self.expansion.set_fan_frecuency(50)
             self.expansion.set_fan_duty(255, 255)
