@@ -34,7 +34,7 @@ class Pi_Monitor:
         # Initialize OLED and Expansion objects
         self.oled = None
         self.expansion = None
-        self.font_size = 10
+        self.font_size = 11
         self.cleanup_done = False
         self.stop_event = threading.Event()  # Keep for signal handling
 
