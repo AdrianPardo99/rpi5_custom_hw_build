@@ -14,8 +14,11 @@ class Expansion:
     REG_FAN_DUTY = 0x06  # Set fan duty cycle
     REG_FAN_THRESHOLD = 0x07  # Set fan temperature threshold
     REG_POWER_ON_CHECK = 0x08  # Set power-on check
+    REG_FAN_AUTO_SPEED = 0x09  # Set fan auto speed value
     REG_SAVE_FLASH = 0xFF  # Save to flash
 
+    REG_FAN_AUTO_SPEED_READ = 0xF1  # Read fan auto speed value
+    REG_FAN_SPEED_READ = 0xF2  # Read fan speed
     REG_I2C_ADDRESS_READ = 0xF3  # Read I2C address
     REG_LED_SPECIFIED_READ = 0xF4  # Read specified LED color
     REG_LED_ALL_READ = 0xF5  # Read all LEDs color
@@ -107,6 +110,30 @@ class Expansion:
         # Save configuration to flash
         self.write(self.REG_SAVE_FLASH, state)
 
+    def set_fan_auto_speed(
+        self,
+        low_speed_0,
+        low_speed_1,
+        mid_speed_0,
+        mid_speed_1,
+        high_speed_0,
+        high_speed_1,
+    ):
+        # Set fan auto speed value
+        speed = [
+            low_speed_0,
+            low_speed_1,
+            mid_speed_0,
+            mid_speed_1,
+            high_speed_0,
+            high_speed_1,
+        ]
+        self.write(self.REG_FAN_AUTO_SPEED, speed)
+
+    def get_fan_auto_speed(self):
+        # Get fan auto speed value
+        return self.read(self.REG_FAN_AUTO_SPEED_READ, 6)
+
     def get_iic_addr(self):
         # Get I2C address
         return self.read(self.REG_I2C_ADDRESS_READ)
@@ -161,6 +188,13 @@ class Expansion:
         version_bytes = self.read(self.REG_VERSION, 14)
         return "".join(chr(b) for b in version_bytes).rstrip("\x00")
 
+    def get_motor_real_speed(self):
+        # Get Fan Speed
+        arr = self.read(self.REG_FAN_SPEED_READ, 4)
+        speed1 = (arr[0] << 8) | arr[1]
+        speed2 = (arr[2] << 8) | arr[3]
+        return [speed1, speed2]
+
 
 if __name__ == "__main__":
     expansion_board = Expansion()
@@ -171,7 +205,7 @@ if __name__ == "__main__":
         # all configurations will be temporary,
         # and will revert to default Settings when expansion_board.set_save_flash(1) is powered off.
         """
-        """'
+        """
         print("Config expansion board ...")
         expansion_board.set_i2c_addr(expansion_board.IIC_ADDRESS)
         expansion_board.set_all_led_color(255,255,255) # set all led color: r,g,b. 0~255
@@ -180,6 +214,9 @@ if __name__ == "__main__":
         expansion_board.set_fan_duty(0, 0)             # Set the fan 1 and fan 2 duty cycle, 0~255
         expansion_board.set_fan_threshold(30, 45)      # Set the temperature threshold, (low temperature, high temperature)
         expansion_board.set_power_on_check(1)          # Set power-on check state, 1: Enable, 0: Disable
+        version = expansion_board.get_version()
+        if "V1.1" in version:
+            expansion_board.set_fan_auto_speed(50,50, 100,100, 175,175) # Set fan auto mode low speed, mid speed, high speed
         expansion_board.set_save_flash(1)              # Save configuration to flash, 1: Enable, 0: Disable
         time.sleep(0.5)
         print("Config expansion board done!")
@@ -187,11 +224,10 @@ if __name__ == "__main__":
 
         count = 0
         expansion_board.set_all_led_color(0, 0, 255)
-        expansion_board.set_fan_duty(0, 0)
         expansion_board.set_led_mode(2)
         expansion_board.set_fan_mode(1)
-        expansion_board.set_fan_frequency(50)
-        expansion_board.set_fan_duty(255, 255)
+        expansion_board.set_fan_frequency(50000)
+        expansion_board.set_fan_duty(128, 128)
         time.sleep(3)
         while True:
             count += 1
@@ -206,7 +242,12 @@ if __name__ == "__main__":
                 print("get fan threshold:", expansion_board.get_fan_threshold())
                 print("get temp:", expansion_board.get_temp())
                 print("get brand:", expansion_board.get_brand())
-                print("get version:", expansion_board.get_version())
+                version = expansion_board.get_version()
+                print("get version:", version)
+                if "V1.1" in version:
+                    print(
+                        "get motor real speed:", expansion_board.get_motor_real_speed()
+                    )
                 print("")
             time.sleep(0.03)
 
