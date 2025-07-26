@@ -17,6 +17,7 @@ import datetime
 
 from oled import OLED
 from expansion import Expansion
+from utils import get_extra_message
 
 
 class Pi_Monitor:
@@ -298,6 +299,8 @@ class Pi_Monitor:
                         last_fan_pwm_limit = 0
 
             # OLED update logic (runs every 3 seconds)
+            extra_message = get_extra_message()
+
             if oled_counter % 3 == 0:
                 self.oled.clear()
                 if oled_screen == 0:
@@ -385,7 +388,7 @@ class Pi_Monitor:
                         "Hey MBVE ❤️", position=(0, 0), font_size=self.font_size
                     )
                     self.oled.draw_text(
-                        "SERVICE MOD BY", position=(0, 16), font_size=self.font_size
+                        "--SERVICE MOD BY--", position=(0, 16), font_size=self.font_size
                     )
                     self.oled.draw_text(
                         "ADRIAN A.K.A", position=(0, 32), font_size=self.font_size
