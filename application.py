@@ -17,7 +17,7 @@ import datetime
 
 from oled import OLED
 from expansion import Expansion
-from utils import get_extra_message
+from utils import get_extra_message, split_text_into_part, group_list_by_default_sizes
 
 
 class Pi_Monitor:
@@ -301,6 +301,13 @@ class Pi_Monitor:
             # OLED update logic (runs every 3 seconds)
             extra_message = get_extra_message()
 
+            total_parts_lcd = 4
+            if extra_message:
+                extra_message = group_list_by_default_sizes(
+                    split_text_into_part(extra_message)
+                )
+                total_parts_lcd += len(extra_message)
+
             if oled_counter % 3 == 0:
                 self.oled.clear()
                 if oled_screen == 0:
@@ -385,7 +392,7 @@ class Pi_Monitor:
                     )
                 elif oled_screen == 3:
                     self.oled.draw_text(
-                        "Hey MBVE ❤️", position=(0, 0), font_size=self.font_size
+                        "Hey Melani luv ❤️", position=(0, 0), font_size=self.font_size
                     )
                     self.oled.draw_text(
                         "---*SERVICE MOD BY*---",
@@ -398,9 +405,20 @@ class Pi_Monitor:
                     self.oled.draw_text(
                         "D3vnullV01d", position=(0, 48), font_size=self.font_size
                     )
+                else:
+                    current_block = oled_screen - 4
+                    messages_block = extra_message[current_block]
+                    for i in range(len(messages_block)):
+                        self.oled.draw_text(
+                            messages_block[i],
+                            position=(0, (16 * i)),
+                            font_size=self.font_size,
+                        )
 
                 self.oled.show()
-                oled_screen = (oled_screen + 1) % 4  # Cycle through screens 0, 1, 2
+                oled_screen = (
+                    oled_screen + 1
+                ) % total_parts_lcd  # Cycle through screens 0, 1, 2
 
             oled_counter += 1
             time.sleep(2)  # Base interval of 1 second
