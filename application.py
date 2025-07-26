@@ -388,7 +388,7 @@ class Pi_Monitor:
                         "Hey MBVE ❤️", position=(0, 0), font_size=self.font_size
                     )
                     self.oled.draw_text(
-                        "---SERVICE MOD BY---",
+                        "---* SERVICE MOD BY *---",
                         position=(0, 16),
                         font_size=self.font_size,
                     )
