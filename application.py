@@ -422,7 +422,7 @@ class Pi_Monitor:
                 ) % total_parts_lcd  # Cycle through screens 0, 1, 2
 
             oled_counter += 1
-            time.sleep(3)  # Base interval of 1 second
+            time.sleep(1)  # Base interval of 1 second
 
 
 if __name__ == "__main__":
