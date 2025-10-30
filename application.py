@@ -301,14 +301,14 @@ class Pi_Monitor:
             # OLED update logic (runs every 3 seconds)
             extra_message = get_extra_message()
 
-            total_parts_lcd = 5
+            total_parts_lcd = 6
             if extra_message:
                 extra_message = group_list_by_default_sizes(
                     split_text_into_part(extra_message)
                 )
                 total_parts_lcd += len(extra_message)
 
-            if oled_counter % 4 == 0:
+            if oled_counter % 5 == 0:
                 self.oled.clear()
                 if oled_screen == 0:
                     # Screen 1: System Parameters
@@ -404,8 +404,10 @@ class Pi_Monitor:
                     )
                 elif oled_screen == 4:
                     self.oled.draw_image("/home/d3vnull/rpi5_custom_hw_build/picture/rf_village_bw-0.jpg")
+                elif oled_screen ==5:
+                    self.oled.draw_image("/home/d3vnull/rpi5_custom_hw_build/picture/rf_village_bw-1.jpg")
                 else:
-                    current_block = oled_screen - 5
+                    current_block = oled_screen - 6
                     messages_block = extra_message[current_block]
                     for i in range(len(messages_block)):
                         self.oled.draw_text(
