@@ -391,9 +391,6 @@ class Pi_Monitor:
                         font_size=self.font_size,
                     )
                 elif oled_screen == 3:
-                    # self.oled.draw_text(
-                    #    "Hey Melani luv ❤️", position=(0, 0), font_size=self.font_size
-                    # )
                     self.oled.draw_text(
                         "SERVICE MOD BY",
                         position=(0, 16),
