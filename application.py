@@ -404,7 +404,6 @@ class Pi_Monitor:
                     )
                 elif oled_screen == 4:
                     self.oled.draw_image("/home/d3vnull/rpi5_custom_hw_build/picture/rf_village_mx.eps")
-                    oled.show()
                 else:
                     current_block = oled_screen - 5
                     messages_block = extra_message[current_block]
