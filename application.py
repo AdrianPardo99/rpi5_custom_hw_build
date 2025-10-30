@@ -403,7 +403,7 @@ class Pi_Monitor:
                         "D3vnullV01d", position=(0, 48), font_size=self.font_size
                     )
                 elif oled_screen == 4:
-                    self.oled.draw_image("/home/d3vnull/rpi5_custom_hw_build/picture/rf_village_mx.eps")
+                    self.oled.draw_image("/home/d3vnull/rpi5_custom_hw_build/picture/rf_village_invert-0.jpg")
                 else:
                     current_block = oled_screen - 5
                     messages_block = extra_message[current_block]
