@@ -313,7 +313,7 @@ class Pi_Monitor:
                 if oled_screen == 0:
                     # Screen 1: System Parameters
                     self.oled.draw_text(
-                        "d3vnullv01d hosts", position=(0, 0), font_size=self.font_size
+                        "d3v.k0 hosts", position=(0, 0), font_size=self.font_size
                     )
                     self.oled.draw_text(
                         self._format_strings["cpu"].format(
@@ -396,11 +396,9 @@ class Pi_Monitor:
                         position=(0, 16),
                         font_size=self.font_size,
                     )
+                    
                     self.oled.draw_text(
-                        "ADRIAN A.K.A", position=(0, 32), font_size=self.font_size
-                    )
-                    self.oled.draw_text(
-                        "D3vnullV01d", position=(0, 48), font_size=self.font_size
+                        "d3v.k0", position=(0, 48), font_size=self.font_size
                     )
                 elif oled_screen == 4:
                     self.oled.draw_image(
